@@ -3,8 +3,29 @@ import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import Button from '@mui/material/Button';
 import TextField from '@mui/material/TextField';
+import {useState} from 'react';
+
 
 function Todo(){
+
+  const[task,setTask]=useState("");
+  const[date,setDate]=useState("");
+  const[time,setTime]=useState("");
+  const[todos,setTodo]=useState([]);
+
+  const handleAddTask=()=>{
+    const newTask={
+      id:Date.now(),
+      task,
+      date,
+      time,
+    };
+    setTodo([...todos,newTask]);
+    setTask("");
+    setDate("");
+    setTime("");
+  };
+ 
 return(
     <Container maxWidth="sm">
     <Box
@@ -19,16 +40,37 @@ return(
       </Typography>
 
       <TextField
-        label="Enter a Task" variant="outlined" fullWidth
+        label="Enter a Task" variant="outlined" fullWidth value={task} onChange={(e)=>setTask(e.target.value)}
       />
 
       <TextField
-        label="Enter a deadline" type="time" variant="outlined" fullWidth
+        label="Enter a deadline" type="date" variant="outlined" fullWidth  value={date} onChange={(e)=>setDate(e.target.value)} InputLabelProps={{ shrink: true }}
       />
 
-      <Button variant="contained" size="large">
+       <TextField
+        label="Enter a deadline" type="time" variant="outlined" fullWidth  value={time} onChange={(e)=>setTime(e.target.value)} InputLabelProps={{ shrink: true }}
+
+      />
+
+      <Button variant="contained" size="large" onClick={handleAddTask}>
         Add
       </Button>
+      {todos.map((todo) => (
+  <Box
+    key={todo.id}
+    sx={{
+      border: "1px solid #ccc",
+      p: 2,
+      borderRadius: 1,
+    }}
+  >
+    <Typography>{todo.task}</Typography>
+    <Typography variant="caption">
+      {todo.date} {todo.time}
+    </Typography>
+  </Box>
+))}
+
     </Box>
   </Container>
 )
