@@ -12,6 +12,8 @@ function Todo() {
   const [date, setDate] = useState("");
   const [time, setTime] = useState("");
   const [todos, setTodo] = useState([]);
+  const [editId, setEditId] = useState(null);
+  const [editTask, setEditTask] = useState("");
 
   const handleAddTask = () => {
     const newTask = {
@@ -26,9 +28,24 @@ function Todo() {
     setTime("");
   };
 
-  const handleDelete=(id)=>{
-    setTodo(todos.filter((todo)=>todo.id!==id));
+  const handleDelete = (id) => {
+    setTodo(todos.filter((todo) => todo.id !== id));
   }
+
+  const handleEdit = (todo) => {
+    setEditId(todo.id);
+    setEditTask(todo.task);
+  }
+  const handleUpdate = (id) => {
+  setTodo(
+    todos.map((todo) =>
+      todo.id === id ? { ...todo, task: editTask } : todo
+    )
+  );
+  setEditId(null);
+  setEditTask("");
+};
+
 
   return (
     <Container maxWidth="sm">
@@ -73,19 +90,31 @@ function Todo() {
             }}
           >
             <Box>
-              <Typography>{todo.task}</Typography>
+              {editId === todo.id ? (
+                <TextField size="small" value={editTask} onChange={(e) => setEditTask(e.target.value)}
+                />
+              ) : (
+                <Typography>{todo.task}</Typography>
+              )}
               <Typography variant="caption">
                 {todo.date} {todo.time}
               </Typography>
             </Box>
 
             <Box sx={{ display: "flex", gap: 1 }}>
-              <Button size="small" variant="outlined">
-                Edit
-              </Button>
-              <Button size="small" color="error" variant="outlined" onClick={()=>handleDelete(todo.id)}>
+              {editId === todo.id ? (
+                <Button size="small"   variant="outlined" onClick={() => handleUpdate(todo.id)}>
+                  Save
+                </Button>
+              ) : (
+                <Button size="small" variant="outlined" onClick={() => handleEdit(todo)}>
+                  Edit
+                </Button>
+              )}
+              <Button size="small" color="error" variant="outlined" onClick={() => handleDelete(todo.id)}>
                 Delete
               </Button>
+              
             </Box>
           </Box>
         ))}
