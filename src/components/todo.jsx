@@ -1,151 +1,201 @@
 import Container from "@mui/material/Container";
-import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
+import Box from "@mui/material/Box";
+import Typography from "@mui/material/Typography";
 import LoadingButton from "@mui/lab/LoadingButton";
 import Button from "@mui/material/Button";
-import TextField from '@mui/material/TextField';
-import { useState, useEffect } from 'react';
+import TextField from "@mui/material/TextField";
+import { useState, useEffect } from "react";
+import { styled } from "@mui/system";
 
+// Styles
+const Wrapper = styled(Box)({
+  marginTop: "14px",
+  padding: "13px",
+  border: "1px solid grey",
+  borderRadius: 2,
+  display: "flex",
+  flexDirection: "column",
+  gap: 12,
+});
 
+const TodoContainer = styled(Box)({
+  border: "1px solid #ccc",
+  padding: "10px",
+  borderRadius: 1,
+  display: "flex",
+  justifyContent: "space-between",
+  alignItems: "center",
+});
+
+const ButtonContainer=styled(Box)({
+  display:"flex",
+  gap:"8px",
+});
+
+// Main render function
 function Todo() {
-
+  // States
   const [task, setTask] = useState("");
   const [date, setDate] = useState("");
   const [time, setTime] = useState("");
   const [todos, setTodos] = useState([]);
   const [editId, setEditId] = useState(null);
   const [editTask, setEditTask] = useState("");
-  const [loading, setLoading] = useState(false);
 
+  // Creates new tasks
   const handleAddTask = () => {
     if (!task || !date || !time) return;
+    const deadline = new Date(`${date}T${time}`).getTime();
 
-    setLoading(true);
-
-    const newTask = {
+    const newTodo = {
       id: Date.now(),
       task,
       date,
       time,
+      isDue: deadline < Date.now(),
     };
 
-    setTimeout(() => {
 
-      setTodos((prev) => [...prev, newTask]);
-
-      setTask("");
-      setDate("");
-      setTime("");
-
-      setLoading(false);
-    }, 500);
+    setTodos((prev) => [...prev, newTodo]);
+    setTask("");
+    setDate("");
+    setTime("");
   };
 
   const handleDelete = (id) => {
     setTodos(todos.filter((todo) => todo.id !== id));
-  }
+  };
 
+  // Enables editing of existing tasks
   const handleEdit = (todo) => {
     setEditId(todo.id);
     setEditTask(todo.task);
-  }
+  };
+
+  // Updates existing tasks
   const handleUpdate = (id) => {
     setTodos(
-      todos.map((todo) =>
-        todo.id === id ? { ...todo, task: editTask } : todo
-      )
+      todos.map((todo) => (todo.id === id ? { ...todo, task: editTask } : todo))
     );
     setEditId(null);
     setEditTask("");
   };
 
-  const isOverdue = (todo) => {
-    const deadline = new Date(`${todo.date}T${todo.time}`);
-    const now = new Date();
-    return now > deadline;
-  };
-
+  // Helper to check if task is overdue
   useEffect(() => {
     const interval = setInterval(() => {
-      setTodos((prev) => [...prev]);
+      setTodos((prev) =>
+        prev.map((todo) => {
+          const deadline = new Date(`${todo.date}T${todo.time}`).getTime();
+          return {
+            ...todo,
+            isDue: deadline < Date.now(),
+          };
+        })
+      );
     }, 60000);
+
     return () => clearInterval(interval);
   }, []);
 
 
+
   return (
     <Container maxWidth="sm">
-      <Box
-        sx={{
-          mt: 4, p: 3,
-          border: "1px solid grey",
-          borderRadius: 2, display: "flex",
-          flexDirection: "column", gap: 2,
-        }}
-      >
+      <Wrapper>
         <Typography variant="h4" align="center">
           Todo App
         </Typography>
 
         <TextField
-          label="Enter a Task" variant="outlined" fullWidth value={task} onChange={(e) => setTask(e.target.value)}
+          label="Enter a Task"
+          variant="outlined"
+          fullWidth
+          value={task}
+          onChange={(e) => setTask(e.target.value)}
         />
 
         <TextField
-          label="Enter a deadline" type="date" variant="outlined" fullWidth value={date} onChange={(e) => setDate(e.target.value)} InputLabelProps={{ shrink: true }}
+          label="Enter a deadline"
+          type="date"
+          variant="outlined"
+          fullWidth
+          value={date}
+          onChange={(e) => setDate(e.target.value)}
+          InputLabelProps={{ shrink: true }}
         />
 
         <TextField
-          label="Enter a deadline" type="time" variant="outlined" fullWidth value={time} onChange={(e) => setTime(e.target.value)} InputLabelProps={{ shrink: true }}
-
+          label="Enter a deadline"
+          type="time"
+          variant="outlined"
+          fullWidth
+          value={time}
+          onChange={(e) => setTime(e.target.value)}
+          InputLabelProps={{ shrink: true }}
         />
 
-        <LoadingButton variant="contained" size="large" loading={loading} disabled={loading} onClick={handleAddTask}>
+        <LoadingButton
+          variant="contained"
+          size="large"
+          fullWidth
+          onClick={handleAddTask}
+        >
           Add
         </LoadingButton>
 
         {todos.map((todo) => (
-          <Box
-            key={todo.id}
-            sx={{
-              border: "1px solid #ccc",
-              p: 2,
-              borderRadius: 1,
-              display: "flex",
-              justifyContent: "space-between",
-              alignItems: "center",
-            }}
-          >
+          <TodoContainer key={todo.id}>
             <Box>
               {editId === todo.id ? (
-                <TextField size="small" value={editTask} onChange={(e) => setEditTask(e.target.value)}
+                <TextField
+                  size="small"
+                  value={editTask}
+                  onChange={(e) => setEditTask(e.target.value)}
                 />
               ) : (
-                <Typography color={isOverdue(todo) ? "error" : "text.primary"}>{todo.task}</Typography>
+                <Typography color={todo.isDue ? "error" : "text.primary"}>
+                  {todo.task}
+                </Typography>
               )}
-              <Typography variant="caption" color={isOverdue(todo) ? "error" : "text.primary"}>
+              <Typography
+                variant="caption"
+                color={todo.isDue ? "error" : "text.primary"}
+              >
                 {todo.date} {todo.time}
               </Typography>
             </Box>
-            <Box sx={{ display: "flex", gap: 1 }}>
+            <ButtonContainer>
               {editId === todo.id ? (
-                <Button size="small" variant="outlined" onClick={() => handleUpdate(todo.id)}>
+                <Button
+                  size="small"
+                  variant="outlined"
+                  onClick={() => handleUpdate(todo.id)}
+                >
                   Save
                 </Button>
               ) : (
-                <Button size="small" variant="outlined" onClick={() => handleEdit(todo)}>
+                <Button
+                  size="small"
+                  variant="outlined"
+                  onClick={() => handleEdit(todo)}
+                >
                   Edit
                 </Button>
               )}
-              <Button size="small" color="error" variant="outlined" onClick={() => handleDelete(todo.id)}>
+              <Button
+                size="small"
+                color="error"
+                variant="outlined"
+                onClick={() => handleDelete(todo.id)}
+              >
                 Delete
               </Button>
-
-            </Box>
-          </Box>
+            </ButtonContainer>
+          </TodoContainer>
         ))}
-      </Box>
+      </Wrapper>
     </Container>
-  )
+  );
 }
-export default Todo
+export default Todo;
