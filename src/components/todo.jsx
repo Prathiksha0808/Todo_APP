@@ -6,6 +6,7 @@ import Button from "@mui/material/Button";
 import TextField from "@mui/material/TextField";
 import { useState, useEffect } from "react";
 import { styled } from "@mui/system";
+import { v4 as uuidv4 } from 'uuid';
 
 // Styles
 const Wrapper = styled(Box)({
@@ -48,7 +49,7 @@ function Todo() {
     const deadline = new Date(`${date}T${time}`).getTime();
 
     const newTodo = {
-      id: Date.now(),
+      id: uuidv4(),
       task,
       date,
       time,
