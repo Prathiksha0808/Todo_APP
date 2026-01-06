@@ -4,7 +4,7 @@ import Typography from '@mui/material/Typography';
 import LoadingButton from "@mui/lab/LoadingButton";
 import Button from "@mui/material/Button";
 import TextField from '@mui/material/TextField';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
 
 function Todo() {
@@ -17,29 +17,29 @@ function Todo() {
   const [editTask, setEditTask] = useState("");
   const [loading, setLoading] = useState(false);
 
-const handleAddTask = () => {
-  if (!task || !date || !time) return;
+  const handleAddTask = () => {
+    if (!task || !date || !time) return;
 
-  setLoading(true);
+    setLoading(true);
 
-  const newTask = {
-    id: Date.now(),
-    task,
-    date,
-    time,
+    const newTask = {
+      id: Date.now(),
+      task,
+      date,
+      time,
+    };
+
+    setTimeout(() => {
+
+      setTodos((prev) => [...prev, newTask]);
+
+      setTask("");
+      setDate("");
+      setTime("");
+
+      setLoading(false);
+    }, 500);
   };
-
-  setTimeout(() => {
-    
-  setTodos((prev) => [...prev, newTask]);
-
-  setTask("");
-  setDate("");
-  setTime("");
-
-    setLoading(false);
-  }, 500);
-};
 
   const handleDelete = (id) => {
     setTodos(todos.filter((todo) => todo.id !== id));
@@ -58,6 +58,19 @@ const handleAddTask = () => {
     setEditId(null);
     setEditTask("");
   };
+
+  const isOverdue = (todo) => {
+    const deadline = new Date(`${todo.date}T${todo.time}`);
+    const now = new Date();
+    return now > deadline;
+  };
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setTodos((prev) => [...prev]);
+    }, 60000);
+    return () => clearInterval(interval);
+  }, []);
 
 
   return (
@@ -87,7 +100,7 @@ const handleAddTask = () => {
 
         />
 
-        <LoadingButton variant="contained" size="large" loading={loading}   disabled={loading} onClick={handleAddTask}>
+        <LoadingButton variant="contained" size="large" loading={loading} disabled={loading} onClick={handleAddTask}>
           Add
         </LoadingButton>
 
@@ -108,9 +121,9 @@ const handleAddTask = () => {
                 <TextField size="small" value={editTask} onChange={(e) => setEditTask(e.target.value)}
                 />
               ) : (
-                <Typography>{todo.task}</Typography>
+                <Typography color={isOverdue(todo) ? "error" : "text.primary"}>{todo.task}</Typography>
               )}
-              <Typography variant="caption">
+              <Typography variant="caption" color={isOverdue(todo) ? "error" : "text.primary"}>
                 {todo.date} {todo.time}
               </Typography>
             </Box>
