@@ -1,7 +1,8 @@
 import Container from "@mui/material/Container";
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
-import Button from '@mui/material/Button';
+import LoadingButton from "@mui/lab/LoadingButton";
+import Button from "@mui/material/Button";
 import TextField from '@mui/material/TextField';
 import { useState } from 'react';
 
@@ -11,25 +12,37 @@ function Todo() {
   const [task, setTask] = useState("");
   const [date, setDate] = useState("");
   const [time, setTime] = useState("");
-  const [todos, setTodo] = useState([]);
+  const [todos, setTodos] = useState([]);
   const [editId, setEditId] = useState(null);
   const [editTask, setEditTask] = useState("");
+  const [loading, setLoading] = useState(false);
 
-  const handleAddTask = () => {
-    const newTask = {
-      id: Date.now(),
-      task,
-      date,
-      time,
-    };
-    setTodo([...todos, newTask]);
-    setTask("");
-    setDate("");
-    setTime("");
+const handleAddTask = () => {
+  if (!task || !date || !time) return;
+
+  setLoading(true);
+
+  const newTask = {
+    id: Date.now(),
+    task,
+    date,
+    time,
   };
 
+  setTimeout(() => {
+    
+  setTodos((prev) => [...prev, newTask]);
+
+  setTask("");
+  setDate("");
+  setTime("");
+
+    setLoading(false);
+  }, 500);
+};
+
   const handleDelete = (id) => {
-    setTodo(todos.filter((todo) => todo.id !== id));
+    setTodos(todos.filter((todo) => todo.id !== id));
   }
 
   const handleEdit = (todo) => {
@@ -37,14 +50,14 @@ function Todo() {
     setEditTask(todo.task);
   }
   const handleUpdate = (id) => {
-  setTodo(
-    todos.map((todo) =>
-      todo.id === id ? { ...todo, task: editTask } : todo
-    )
-  );
-  setEditId(null);
-  setEditTask("");
-};
+    setTodos(
+      todos.map((todo) =>
+        todo.id === id ? { ...todo, task: editTask } : todo
+      )
+    );
+    setEditId(null);
+    setEditTask("");
+  };
 
 
   return (
@@ -74,9 +87,10 @@ function Todo() {
 
         />
 
-        <Button variant="contained" size="large" onClick={handleAddTask}>
+        <LoadingButton variant="contained" size="large" loading={loading}   disabled={loading} onClick={handleAddTask}>
           Add
-        </Button>
+        </LoadingButton>
+
         {todos.map((todo) => (
           <Box
             key={todo.id}
@@ -100,10 +114,9 @@ function Todo() {
                 {todo.date} {todo.time}
               </Typography>
             </Box>
-
             <Box sx={{ display: "flex", gap: 1 }}>
               {editId === todo.id ? (
-                <Button size="small"   variant="outlined" onClick={() => handleUpdate(todo.id)}>
+                <Button size="small" variant="outlined" onClick={() => handleUpdate(todo.id)}>
                   Save
                 </Button>
               ) : (
@@ -114,12 +127,10 @@ function Todo() {
               <Button size="small" color="error" variant="outlined" onClick={() => handleDelete(todo.id)}>
                 Delete
               </Button>
-              
+
             </Box>
           </Box>
         ))}
-
-
       </Box>
     </Container>
   )
