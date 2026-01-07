@@ -5,7 +5,7 @@ This app allows users to manage tasks efficiently with proper validation and dea
 
 ---
 
-## 🚀 Features
+##  Features
 
 - Add new tasks with date and time
 - Edit existing tasks inline
@@ -17,7 +17,7 @@ This app allows users to manage tasks efficiently with proper validation and dea
 
 ---
 
-## 🛠️ Tech Stack
+## Tech Stack
 
 - React
 - Vite
@@ -27,5 +27,4 @@ This app allows users to manage tasks efficiently with proper validation and dea
 - JavaScript
 
 
-git clone <repository-url>
 
