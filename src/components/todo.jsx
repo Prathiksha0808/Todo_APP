@@ -4,7 +4,7 @@ import Typography from "@mui/material/Typography";
 import LoadingButton from "@mui/lab/LoadingButton";
 import Button from "@mui/material/Button";
 import TextField from "@mui/material/TextField";
-import { useState, useEffect } from "react";
+import { useState, useEffect,useRef } from "react";
 import { styled } from "@mui/system";
 import { v4 as uuidv4 } from 'uuid';
 import { useForm } from 'react-hook-form';
@@ -68,7 +68,7 @@ function Todo() {
   // States
   const [todos, setTodos] = useState([]);
   const [editId, setEditId] = useState(null);
-
+  
 
   const { register, handleSubmit, reset, formState: { errors }, } = useForm({
     resolver: yupResolver(todoschema),
@@ -94,6 +94,7 @@ function Todo() {
       date,
       time,
       isDue: deadline < Date.now(),
+      alerted: false,
     };
 
     setTodos((prev) => [...prev, newTodo]);
@@ -117,45 +118,71 @@ function Todo() {
 
   // Updates existing tasks
   const onEditSubmit = (data) => {
-  const { task, date, time } = data;
+    const { task, date, time } = data;
 
-  const deadline = new Date(`${date}T${time}`).getTime();
-  const isDue = deadline < Date.now(); 
+    const deadline = new Date(`${date}T${time}`).getTime();
+    const isDue = deadline < Date.now();
 
-  setTodos((prev) =>
-    prev.map((todo) =>
-      todo.id === editId
-        ? {
+    setTodos((prev) =>
+      prev.map((todo) =>
+        todo.id === editId
+          ? {
             ...todo,
             task,
             date,
             time,
-            isDue, 
+            isDue,
+            alerted: false,
           }
-        : todo
-    )
-  );
+          : todo
+      )
+    );
 
-  setEditId(null);
-};
+    setEditId(null);
+  };
 
+  
 
   // Helper to check if task is overdue
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setTodos((prev) =>
-        prev.map((todo) => {
-          const deadline = new Date(`${todo.date}T${todo.time}`).getTime();
+useEffect(() => {
+  const interval = setInterval(() => {
+    const overdueTasks = [];
+
+    setTodos((prev) =>
+      prev.map((todo) => {
+        const deadline = new Date(`${todo.date}T${todo.time}`).getTime();
+        const overdue = deadline < Date.now();
+
+        if (overdue && !todo.alerted) {
+          overdueTasks.push(todo.task);
+
           return {
             ...todo,
-            isDue: deadline < Date.now(),
+            isDue: true,
+            alerted: true,
           };
-        })
-      );
-    }, 60000);
+        }
 
-    return () => clearInterval(interval);
-  }, []);
+        return {
+          ...todo,
+          isDue: overdue,
+        };
+      })
+    );
+
+    //trigger alerts for overdue tasks
+    if (overdueTasks.length) {
+      setTimeout(() => {
+        overdueTasks.forEach((task) => {
+          alert(`Task "${task}" is overdue!`);
+        });
+      }, 0);
+    }
+  }, 60000);
+
+  return () => clearInterval(interval);
+}, []);
+
 
 
 
@@ -262,7 +289,7 @@ function Todo() {
                     variant="caption"
                     color={todo.isDue ? "error" : "text.secondary"}
                   >
-                    {dayjs(`${todo.date} ${todo.time}`).format("DD MMM YYYY hh:mm A")}              
+                    {dayjs(`${todo.date} ${todo.time}`).format("DD MMM YYYY hh:mm A")}
                   </Typography>
 
                 </Box>
