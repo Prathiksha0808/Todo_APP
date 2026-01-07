@@ -1,37 +1,82 @@
 import Container from "@mui/material/Container";
-import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
 import LoadingButton from "@mui/lab/LoadingButton";
 import Button from "@mui/material/Button";
+import Box from "@mui/material/Box";
 import TextField from "@mui/material/TextField";
 import { useState, useEffect } from "react";
 import { v4 as uuidv4 } from "uuid";
 import { useForm } from "react-hook-form";
 import * as yup from "yup";
 import { yupResolver } from "@hookform/resolvers/yup";
-import {
-  PageWrapper,
-  MainCard,
-  Wrapper,
-  StyledAppBar,
-  NavToolbar,
-  NavActions,
-  NavTitle,
-  TodoContainer,
-  FormContainer,
-  ButtonContainer,
-  EditForm,
-} from "./todoStyle.jsx";
+import { styled } from "@mui/system";
+
 
 import dayjs from "dayjs";
 import advancedFormat from "dayjs/plugin/advancedFormat";
 dayjs.extend(advancedFormat);
 
-import IconButton from "@mui/material/IconButton";
-import TodayIcon from "@mui/icons-material/Today";
-import EventNoteIcon from "@mui/icons-material/EventNote";
-import CheckCircleOutlineIcon from "@mui/icons-material/CheckCircleOutline";
-import AccountCircleIcon from "@mui/icons-material/AccountCircle";
+
+// Styles
+const TodoContainer = styled(Box)(({ isdue }) => ({
+  padding: "16px",
+  borderRadius: "12px",
+  marginTop: "16px",
+  display: "flex",
+  alignItems: "center",
+  backgroundColor: "#fff",
+  border: "1px solid #e5e7eb",
+  borderLeft: isdue === "true" ? "6px solid #e53e3e" : "6px solid #48bb78",
+  transition: "all 0.2s ease-in-out",
+
+  "&:hover": {
+    transform: "translateY(-2px)",
+    boxShadow: "0px 4px 12px rgba(0,0,0,0.05)",
+  },
+}));
+
+const ButtonContainer = styled(Box)({
+  display: "flex",
+  gap: "8px",
+  alignItems: "center",
+});
+
+const FormContainer = styled(Box)({
+  display: "flex",
+  flexDirection: "column",
+  gap: "14px",
+});
+
+const EditForm = styled("form")({
+  display: "flex",
+  flexDirection: "column",
+  gap: "12px",
+  width: "100%",
+});
+
+const PageWrapper = styled(Box)({
+  minHeight: "100vh",
+  backgroundColor: "#f5f7fb",
+  paddingTop: 0,
+});
+
+const Wrapper = styled(Box)({
+  padding: "32px",
+  borderRadius: "16px",
+  boxShadow: "0px 15px 35px rgba(0,0,0,0.05)",
+  backgroundColor: "#ffffff",
+});
+
+
+
+const MainCard = styled(Box)({
+  backgroundColor: "#ffffff",
+  borderRadius: "10px",
+  padding: "24px",
+  marginTop: 0, // 🔥 important
+  boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
+});
+
 
 // Validation schema
 const todoschema = yup.object({
@@ -157,31 +202,9 @@ function Todo() {
   return (
     <>
       <PageWrapper>
-        <StyledAppBar position="static">
-          <NavToolbar>
-            <NavTitle variant="h6">Todo App</NavTitle>
+        
 
-            <NavActions>
-              <IconButton color="inherit">
-                <TodayIcon />
-              </IconButton>
-
-              <IconButton color="inherit">
-                <EventNoteIcon />
-              </IconButton>
-
-              <IconButton color="inherit">
-                <CheckCircleOutlineIcon />
-              </IconButton>
-
-              <IconButton color="inherit">
-                <AccountCircleIcon />
-              </IconButton>
-            </NavActions>
-          </NavToolbar>
-        </StyledAppBar>
-
-        <Container maxWidth="sm">
+        <Container maxWidth="sm"  sx={{ pt: 4 }}>
           <MainCard>
             <Wrapper>
               <form onSubmit={handleSubmit(onSubmit)}>
