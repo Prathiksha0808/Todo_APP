@@ -11,7 +11,8 @@ import { useForm } from 'react-hook-form';
 import * as yup from "yup";
 import { yupResolver } from "@hookform/resolvers/yup";
 import dayjs from "dayjs";
-
+import advancedFormat from "dayjs/plugin/advancedFormat";
+dayjs.extend(advancedFormat);
 
 
 
@@ -289,7 +290,7 @@ useEffect(() => {
                     variant="caption"
                     color={todo.isDue ? "error" : "text.secondary"}
                   >
-                    {dayjs(`${todo.date} ${todo.time}`).format("DD MMM YYYY hh:mm A")}
+{dayjs(`${todo.date} ${todo.time}`).format("MMM Do, YYYY HH:mm A")}
                   </Typography>
 
                 </Box>
