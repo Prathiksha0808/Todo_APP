@@ -10,6 +10,8 @@ import { v4 as uuidv4 } from 'uuid';
 import { useForm } from 'react-hook-form';
 import * as yup from "yup";
 import { yupResolver } from "@hookform/resolvers/yup";
+import dayjs from "dayjs";
+
 
 
 
@@ -66,7 +68,6 @@ function Todo() {
   // States
   const [todos, setTodos] = useState([]);
   const [editId, setEditId] = useState(null);
-
 
 
   const { register, handleSubmit, reset, formState: { errors }, } = useForm({
@@ -261,7 +262,7 @@ function Todo() {
                     variant="caption"
                     color={todo.isDue ? "error" : "text.secondary"}
                   >
-                    {todo.date} {todo.time}
+                    {dayjs(`${todo.date} ${todo.time}`).format("DD MMM YYYY hh:mm A")}              
                   </Typography>
 
                 </Box>
