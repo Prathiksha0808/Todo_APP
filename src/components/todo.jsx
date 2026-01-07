@@ -4,74 +4,57 @@ import Typography from "@mui/material/Typography";
 import LoadingButton from "@mui/lab/LoadingButton";
 import Button from "@mui/material/Button";
 import TextField from "@mui/material/TextField";
-import { useState, useEffect} from "react";
-import { styled } from "@mui/system";
-import { v4 as uuidv4 } from 'uuid';
-import { useForm } from 'react-hook-form';
+import { useState, useEffect } from "react";
+import { v4 as uuidv4 } from "uuid";
+import { useForm } from "react-hook-form";
 import * as yup from "yup";
 import { yupResolver } from "@hookform/resolvers/yup";
+import {
+  PageWrapper,
+  MainCard,
+  Wrapper,
+  StyledAppBar,
+  NavToolbar,
+  NavActions,
+  NavTitle,
+  TodoContainer,
+  FormContainer,
+  ButtonContainer,
+  EditForm,
+} from "./todoStyle.jsx";
+
 import dayjs from "dayjs";
 import advancedFormat from "dayjs/plugin/advancedFormat";
 dayjs.extend(advancedFormat);
 
-
-
-// Styles
-const Wrapper = styled(Box)({
-  marginTop: "16px",
-  border: "1px solid grey",
-  borderRadius: 4,
-  padding: "16px",
-});
-
-
-const TodoContainer = styled(Box)({
-  border: "1px solid #ccc",
-  padding: "12px",
-  borderRadius: 4,
-  marginTop: "12px",
-  display: "flex",
-  flexDirection: "row",
-  gap: "12px",
-});
-
-
-const ButtonContainer = styled(Box)({
-  display: "flex",
-  gap: "8px",
-  alignItems: "center",
-});
-
-const FormContainer = styled(Box)({
-  display: "flex",
-  flexDirection: "column",
-  gap: "14px",
-});
-
-const EditForm = styled("form")({
-  display: "flex",
-  flexDirection: "column",
-  gap: "12px",
-  width: "100%",
-});
-
-
+import IconButton from "@mui/material/IconButton";
+import TodayIcon from "@mui/icons-material/Today";
+import EventNoteIcon from "@mui/icons-material/EventNote";
+import CheckCircleOutlineIcon from "@mui/icons-material/CheckCircleOutline";
+import AccountCircleIcon from "@mui/icons-material/AccountCircle";
 
 // Validation schema
 const todoschema = yup.object({
-  task: yup.string().required("Task is required").matches(/^\S.*$/, "Task cannot start with a space"),
+  task: yup
+    .string()
+    .required("Task is required")
+    .matches(/^\S.*$/, "Task cannot start with a space"),
   date: yup.string().required("Date is required"),
   time: yup.string().required("Time is required"),
-})
+});
 
 // Main render function
 function Todo() {
   // States
   const [todos, setTodos] = useState([]);
   const [editId, setEditId] = useState(null);
-  
 
-  const { register, handleSubmit, reset, formState: { errors }, } = useForm({
+  const {
+    register,
+    handleSubmit,
+    reset,
+    formState: { errors },
+  } = useForm({
     resolver: yupResolver(todoschema),
   });
 
@@ -79,10 +62,10 @@ function Todo() {
     register: editRegister,
     handleSubmit: handleEditSubmit,
     reset: resetEdit,
-    formState: { errors: editErrors }, } = useForm({
-      resolver: yupResolver(todoschema),
-    });
-
+    formState: { errors: editErrors },
+  } = useForm({
+    resolver: yupResolver(todoschema),
+  });
 
   // Creates new tasks
   const onSubmit = (data) => {
@@ -100,6 +83,7 @@ function Todo() {
 
     setTodos((prev) => [...prev, newTodo]);
     reset();
+    setTimeout(checkOverdueTasks, 0);
   };
 
   const handleDelete = (id) => {
@@ -116,7 +100,6 @@ function Todo() {
     });
   };
 
-
   // Updates existing tasks
   const onEditSubmit = (data) => {
     const { task, date, time } = data;
@@ -128,13 +111,13 @@ function Todo() {
       prev.map((todo) =>
         todo.id === editId
           ? {
-            ...todo,
-            task,
-            date,
-            time,
-            isDue,
-            alerted: false,
-          }
+              ...todo,
+              task,
+              date,
+              time,
+              isDue,
+              alerted: false,
+            }
           : todo
       )
     );
@@ -142,13 +125,9 @@ function Todo() {
     setEditId(null);
   };
 
-  
-
-  // Helper to check if task is overdue
-useEffect(() => {
-  const interval = setInterval(() => {
+  // Checks all todos to determine whether they are overdue.
+  const checkOverdueTasks = () => {
     const overdueTasks = [];
-
     setTodos((prev) =>
       prev.map((todo) => {
         const deadline = new Date(`${todo.date}T${todo.time}`).getTime();
@@ -156,159 +135,189 @@ useEffect(() => {
 
         if (overdue && !todo.alerted) {
           overdueTasks.push(todo.task);
-
-          return {
-            ...todo,
-            isDue: true,
-            alerted: true,
-          };
+          return { ...todo, isDue: true, alerted: true };
         }
-
-        return {
-          ...todo,
-          isDue: overdue,
-        };
+        return { ...todo, isDue: overdue };
       })
     );
-
-    //trigger alerts for overdue tasks
+    //alert for overdue tasks
     if (overdueTasks.length) {
       setTimeout(() => {
-        overdueTasks.forEach((task) => {
-          alert(`Task "${task}" is overdue!`);
-        });
+        overdueTasks.forEach((task) => alert(`Task "${task}" is overdue!`));
       }, 0);
     }
-  }, 60000);
+  };
 
-  return () => clearInterval(interval);
-}, []);
-
-
-
+  //check overdue tasks every minute
+  useEffect(() => {
+    const interval = setInterval(checkOverdueTasks, 60000);
+    return () => clearInterval(interval);
+  }, []);
 
   return (
-    <Container maxWidth="sm">
-      <Wrapper>
-        <form onSubmit={handleSubmit(onSubmit)}>
-          <FormContainer>
-            <Typography variant="h4" align="center">
-              Todo App
-            </Typography>
+    <>
+      <PageWrapper>
+        <StyledAppBar position="static">
+          <NavToolbar>
+            <NavTitle variant="h6">Todo App</NavTitle>
 
-            <TextField
-              label="Enter a Task"
-              variant="outlined"
-              fullWidth
-              {...register("task")}
-              error={!!errors.task}
-              helperText={errors.task?.message}
-            />
+            <NavActions>
+              <IconButton color="inherit">
+                <TodayIcon />
+              </IconButton>
 
-            <TextField
-              label="Enter a deadline"
-              type="date"
-              variant="outlined"
-              fullWidth
-              {...register("date")}
-              error={!!errors.date}
-              helperText={errors.date?.message}
-              InputLabelProps={{ shrink: true }}
-            />
+              <IconButton color="inherit">
+                <EventNoteIcon />
+              </IconButton>
 
-            <TextField
-              label="Enter a deadline"
-              type="time"
-              variant="outlined"
-              fullWidth
-              {...register("time")}
-              error={!!errors.time}
-              helperText={errors.time?.message}
-              InputLabelProps={{ shrink: true }}
-            />
+              <IconButton color="inherit">
+                <CheckCircleOutlineIcon />
+              </IconButton>
 
-            <LoadingButton
-              variant="contained"
-              size="large"
-              fullWidth
-              type="submit">
-              Add
-            </LoadingButton>
-          </FormContainer>
-        </form>
+              <IconButton color="inherit">
+                <AccountCircleIcon />
+              </IconButton>
+            </NavActions>
+          </NavToolbar>
+        </StyledAppBar>
 
+        <Container maxWidth="sm">
+          <MainCard>
+            <Wrapper>
+              <form onSubmit={handleSubmit(onSubmit)}>
+                <FormContainer>
+                  <TextField
+                    label="Enter a Task"
+                    variant="outlined"
+                    fullWidth
+                    {...register("task")}
+                    error={!!errors.task}
+                    helperText={errors.task?.message}
+                  />
 
+                  <TextField
+                    label="Enter a deadline"
+                    type="date"
+                    variant="outlined"
+                    fullWidth
+                    {...register("date")}
+                    error={!!errors.date}
+                    helperText={errors.date?.message}
+                    InputLabelProps={{ shrink: true }}
+                  />
 
-        {todos.map((todo) => (
-          <TodoContainer key={todo.id}>
-            {editId === todo.id ? (
-              <EditForm onSubmit={handleEditSubmit(onEditSubmit)}>
-                <TextField
-                  size="small"
-                  label="Task"
-                  fullWidth
-                  {...editRegister("task")}
-                  error={!!editErrors.task}
-                  helperText={editErrors.task?.message}
-                />
+                  <TextField
+                    label="Enter a deadline"
+                    type="time"
+                    variant="outlined"
+                    fullWidth
+                    {...register("time")}
+                    error={!!errors.time}
+                    helperText={errors.time?.message}
+                    InputLabelProps={{ shrink: true }}
+                  />
 
-                <TextField
-                  size="small"
-                  type="date"
-                  fullWidth
-                  {...editRegister("date")}
-                  error={!!editErrors.date}
-                  helperText={editErrors.date?.message}
-                  InputLabelProps={{ shrink: true }}
-                />
-
-                <TextField
-                  size="small"
-                  type="time"
-                  fullWidth
-                  {...editRegister("time")}
-                  error={!!editErrors.time}
-                  helperText={editErrors.time?.message}
-                  InputLabelProps={{ shrink: true }}
-                />
-
-                <ButtonContainer>
-                  <Button type="submit" size="small" variant="outlined">
-                    Save
-                  </Button>
-                </ButtonContainer>
-              </EditForm>
-            ) : (
-
-              <>
-                <Box sx={{ flexGrow: 1 }}>
-                  <Typography color={todo.isDue ? "error" : "text.primary"}>
-                    {todo.task}
-                  </Typography>
-
-                  <Typography
-                    variant="caption"
-                    color={todo.isDue ? "error" : "text.secondary"}
+                  <LoadingButton
+                    variant="contained"
+                    size="large"
+                    fullWidth
+                    type="submit"
+                    sx={{ backgroundColor: " #2563eb" }}
                   >
-{dayjs(`${todo.date} ${todo.time}`).format("MMM Do, YYYY HH:mm A")}
-                  </Typography>
+                    Add
+                  </LoadingButton>
+                </FormContainer>
+              </form>
 
-                </Box>
+              {todos.map((todo) => {
+                const deadline = new Date(
+                  `${todo.date}T${todo.time}`
+                ).getTime();
+                const isOverdue = deadline < Date.now();
 
-                <ButtonContainer>
-                  <Button variant="outlined" onClick={() => handleEdit(todo)}>Edit</Button>
-                  <Button color="error" variant="outlined" onClick={() => handleDelete(todo.id)}>
-                    Delete
-                  </Button>
-                </ButtonContainer>
-              </>
-            )}
-          </TodoContainer>
+                return (
+                  <TodoContainer key={todo.id} isdue={isOverdue.toString()}>
+                    {editId === todo.id ? (
+                      <EditForm onSubmit={handleEditSubmit(onEditSubmit)}>
+                        <TextField
+                          size="small"
+                          label="Task"
+                          fullWidth
+                          {...editRegister("task")}
+                          error={!!editErrors.task}
+                          helperText={editErrors.task?.message}
+                        />
 
-        ))}
-      </Wrapper>
+                        <TextField
+                          size="small"
+                          type="date"
+                          fullWidth
+                          {...editRegister("date")}
+                          error={!!editErrors.date}
+                          helperText={editErrors.date?.message}
+                          InputLabelProps={{ shrink: true }}
+                        />
 
-    </Container>
+                        <TextField
+                          size="small"
+                          type="time"
+                          fullWidth
+                          {...editRegister("time")}
+                          error={!!editErrors.time}
+                          helperText={editErrors.time?.message}
+                          InputLabelProps={{ shrink: true }}
+                        />
+
+                        <ButtonContainer>
+                          <Button type="submit" size="small" variant="outlined">
+                            Save
+                          </Button>
+                        </ButtonContainer>
+                      </EditForm>
+                    ) : (
+                      <>
+                        <Box sx={{ flexGrow: 1 }}>
+                          <Typography
+                            color={isOverdue ? "error" : "text.primary"}
+                          >
+                            {todo.task}
+                          </Typography>
+
+                          <Typography
+                            variant="caption"
+                            color={isOverdue ? "error" : "text.secondary"}
+                          >
+                            {dayjs(`${todo.date} ${todo.time}`).format(
+                              "MMM Do, YYYY HH:mm A"
+                            )}
+                          </Typography>
+                        </Box>
+
+                        <ButtonContainer>
+                          <Button
+                            variant="outlined"
+                            onClick={() => handleEdit(todo)}
+                          >
+                            Edit
+                          </Button>
+                          <Button
+                            color="error"
+                            variant="outlined"
+                            onClick={() => handleDelete(todo.id)}
+                          >
+                            Delete
+                          </Button>
+                        </ButtonContainer>
+                      </>
+                    )}
+                  </TodoContainer>
+                );
+              })}
+            </Wrapper>
+          </MainCard>
+        </Container>
+      </PageWrapper>
+    </>
   );
 }
 export default Todo;

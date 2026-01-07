@@ -1,12 +1,13 @@
 import Todo from "./components/todo";
-
+import CssBaseline from "@mui/material/CssBaseline";
 
 function App() {
   return (
-  <><Todo/></>
-);
-
-
+    <>
+      <CssBaseline />
+      <Todo />
+    </>
+  );
 }
 
 export default App;
