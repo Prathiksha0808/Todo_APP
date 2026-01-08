@@ -11,11 +11,9 @@ import * as yup from "yup";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { styled } from "@mui/system";
 
-
 import dayjs from "dayjs";
 import advancedFormat from "dayjs/plugin/advancedFormat";
 dayjs.extend(advancedFormat);
-
 
 // Styles
 const TodoContainer = styled(Box)(({ isdue }) => ({
@@ -67,16 +65,13 @@ const Wrapper = styled(Box)({
   backgroundColor: "#ffffff",
 });
 
-
-
 const MainCard = styled(Box)({
   backgroundColor: "#ffffff",
   borderRadius: "10px",
   padding: "24px",
-  marginTop: 0, // 🔥 important
+  marginTop: 0,
   boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
 });
-
 
 // Validation schema
 const todoschema = yup.object({
@@ -93,11 +88,15 @@ function Todo() {
   // States
   const [todos, setTodos] = useState([]);
   const [editId, setEditId] = useState(null);
+  // Today's date and time for validation
+  const today = new Date().toISOString().split("T")[0];
+  const nowTime = new Date().toTimeString().slice(0, 5);
 
   const {
     register,
     handleSubmit,
     reset,
+    watch,
     formState: { errors },
   } = useForm({
     resolver: yupResolver(todoschema),
@@ -131,6 +130,7 @@ function Todo() {
     setTimeout(checkOverdueTasks, 0);
   };
 
+  //delete todo
   const handleDelete = (id) => {
     setTodos(todos.filter((todo) => todo.id !== id));
   };
@@ -166,7 +166,6 @@ function Todo() {
           : todo
       )
     );
-
     setEditId(null);
   };
 
@@ -202,9 +201,7 @@ function Todo() {
   return (
     <>
       <PageWrapper>
-        
-
-        <Container maxWidth="sm"  sx={{ pt: 4 }}>
+        <Container maxWidth="sm" sx={{ pt: 4 }}>
           <MainCard>
             <Wrapper>
               <form onSubmit={handleSubmit(onSubmit)}>
@@ -227,10 +224,13 @@ function Todo() {
                     error={!!errors.date}
                     helperText={errors.date?.message}
                     InputLabelProps={{ shrink: true }}
+                    inputProps={{
+                      min: today,
+                    }}
                   />
 
                   <TextField
-                    label="Enter a deadline"
+                    label="Enter time"
                     type="time"
                     variant="outlined"
                     fullWidth
@@ -238,6 +238,9 @@ function Todo() {
                     error={!!errors.time}
                     helperText={errors.time?.message}
                     InputLabelProps={{ shrink: true }}
+                    inputProps={{
+                      min: watch("date") === today ? nowTime : undefined,
+                    }}
                   />
 
                   <LoadingButton
@@ -270,7 +273,6 @@ function Todo() {
                           error={!!editErrors.task}
                           helperText={editErrors.task?.message}
                         />
-
                         <TextField
                           size="small"
                           type="date"
@@ -279,6 +281,9 @@ function Todo() {
                           error={!!editErrors.date}
                           helperText={editErrors.date?.message}
                           InputLabelProps={{ shrink: true }}
+                          inputProps={{
+                            min: new Date().toISOString().split("T")[0],
+                          }}
                         />
 
                         <TextField
